@@ -178,11 +178,17 @@ def update_group_lrs(optim, step, args):
 # ============================================================
 def main(args):
     output_dir = Path(args.output_dir)
+    loggers = ["tensorboard"]
+    try:
+        import wandb
+        loggers.append("wandb")
+    except ImportError:
+        pass
     accelerator = Accelerator(
-        log_with="tensorboard", 
+        log_with=loggers,
         project_dir=output_dir
     )
-    accelerator.init_trackers("XVLA-Training")
+    accelerator.init_trackers("XVLA-Training", config=vars(args))
     
     accelerator.wait_for_everyone()
     logger = get_logger(__name__, output_dir=output_dir, accelerator=accelerator)
