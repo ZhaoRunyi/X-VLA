@@ -1,4 +1,3 @@
-#!/home/agilex/miniconda3/envs/aloha/bin/python3
 # -*- coding: utf-8 -*-
 
 # Software License Agreement (BSD License)

@@ -65,6 +65,11 @@ class InfiniteDataReader(IterableDataset):
                 self.metas[meta["dataset_name"]] = meta
             ### Lerobot v2.1 style
             elif "codebase_version" in meta.keys() and meta["codebase_version"] == 'v2.1':
+                try:
+                    get_handler_cls(meta["robot_type"])
+                except KeyError:
+                    print(f"== skip unsupported lerobot dataset {meta['robot_type']} at {file_path}====")
+                    continue
                 meta['datalist'] = []
                 if "root_path" not in meta.keys(): meta['root_path'] = "/".join(file_path.split("/")[:-2])
                 with io.BytesIO(fileio.get(fileio.join_path("/".join(file_path.split("/")[:-1]), "episodes.jsonl"))) as f:
@@ -72,6 +77,8 @@ class InfiniteDataReader(IterableDataset):
                 self.metas[meta['root_path']] = meta
                 print(f"== lerobot dataset {meta['robot_type']} with {meta['total_episodes']} trajs at {meta['root_path']}====")
             else: raise NotImplementedError(f"unrecognized meta file format: {file}")
+        if not self.metas:
+            raise NotImplementedError(f"no supported meta files found in: {metas_path}")
 
         self.image_aug = [
             transforms.Resize((224, 224), interpolation=InterpolationMode.BICUBIC),
@@ -101,9 +108,11 @@ class InfiniteDataReader(IterableDataset):
                     action_mode = self.action_mode
                 ):
                     sample["domain_id"] = torch.tensor(DATA_DOMAIN_ID.get(robot_type, 0))
-                    idx_for_delta = sample.pop("idx_for_delta", [])
-                    idx_for_mask_proprio = sample.pop("idx_for_mask_proprio", [])
-                    sample.update(action_slice(sample.pop("abs_trajectory", None), idx_for_delta, idx_for_mask_proprio))
+                    abs_trajectory = sample.pop("abs_trajectory", None)
+                    if abs_trajectory is not None:
+                        idx_for_delta = sample.pop("idx_for_delta", [])
+                        idx_for_mask_proprio = sample.pop("idx_for_mask_proprio", [])
+                        sample.update(action_slice(abs_trajectory, idx_for_delta, idx_for_mask_proprio))
                     yield sample
         if self.training: yield from self._iter_one_dataset(dataset_name)
 

@@ -44,19 +44,15 @@ cd X-VLA
 ```
 
 ```bash
-# Create and activate Conda environment
-conda create -n XVLA python=3.10 -y
-conda activate XVLA
+# Create and activate a uv environment
+uv venv .venv --python 3.10
+source .venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
-```
+# Install PyTorch with CUDA 12.1
+uv pip install "torch==2.1.*" "torchvision==0.16.*" "torchaudio==2.1.*" --index-url https://download.pytorch.org/whl/cu121
 
-or 
-
-```bash
-conda env create -f environment.yml
-conda activate xvla-stable
+# Install the remaining dependencies
+uv pip install -r requirements.txt
 ```
 
 ---

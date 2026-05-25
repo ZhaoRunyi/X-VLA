@@ -15,11 +15,11 @@ Test:
 ### Install dependencies
 
 ```shell
-pip3 install python-can
+uv pip install python-can
 ```
 
 ```shell
-pip3 install piper_sdk
+uv pip install piper_sdk
 ```
 
 ## Quick Start

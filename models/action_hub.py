@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Iterable, Tuple, Dict, Type
 import torch
 import torch.nn as nn
+from datasets.domain_handler import slai_piper_space
 
 # =============================================================================
 # Registry
@@ -346,6 +347,39 @@ class AutoActionSpace(BaseActionSpace):
         return self._trim_to_real_dim(action)
 
 
+@register_action("slai_piper_joint_gripper")
+class SlaiPiperActionSpace(JointActionSpace):
+    dim_action = slai_piper_space.action_dim("slai_piper_joint_gripper")
+    gripper_idx = slai_piper_space.gripper_indices("slai_piper_joint_gripper")
+
+
+@register_action("slai_piper")
+@register_action("slai_piper_ee_gripper")
+class SlaiPiperEEActionSpace(EE6DActionSpace):
+    dim_action = slai_piper_space.action_dim("slai_piper_ee_gripper")
+    gripper_idx = slai_piper_space.gripper_indices("slai_piper_ee_gripper")
+    POS_IDX_1 = (1, 2, 3)
+    ROT_IDX_1 = (4, 5, 6, 7, 8, 9)
+    POS_IDX_2 = (11, 12, 13)
+    ROT_IDX_2 = (14, 15, 16, 17, 18, 19)
+
+
+@register_action("slai_piper_all")
+class SlaiPiperAllActionSpace(SlaiPiperEEActionSpace):
+    dim_action = slai_piper_space.action_dim("slai_piper_all")
+    gripper_idx = slai_piper_space.gripper_indices("slai_piper_all")
+    JOINT_IDX = (0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21)
+    POS_IDX_1 = (7, 8, 9)
+    ROT_IDX_1 = (10, 11, 12, 13, 14, 15)
+    POS_IDX_2 = (23, 24, 25)
+    ROT_IDX_2 = (26, 27, 28, 29, 30, 31)
+
+    def compute_loss(self, pred, target):
+        losses = super().compute_loss(pred, target)
+        losses["joints_loss"] = self.mse(pred[:, :, self.JOINT_IDX], target[:, :, self.JOINT_IDX])
+        return losses
+
+
 
 # =============================================================================
 # Exports
@@ -358,5 +392,8 @@ __all__ = [
     "JointActionSpace",
     "AGIBOTEE6DActionSpace",
     "AutoActionSpace",
+    "SlaiPiperActionSpace",
+    "SlaiPiperEEActionSpace",
+    "SlaiPiperAllActionSpace",
     "ACTION_REGISTRY",
 ]

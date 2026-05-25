@@ -9,14 +9,13 @@ We evaluate **X-VLA** on the VLABench benchmark, which consists of four subtasks
 Set up VLABench following the [official instructions](https://github.com/OpenMOSS/VLABench).
 
 ```sh
-# Prepare conda environment
 cd evaluation/vlabench
-conda create -n vlabench python=3.10
-conda activate vlabench
+uv venv .venv-vlabench --python 3.10
+source .venv-vlabench/bin/activate
 git clone https://github.com/OpenMOSS/VLABench.git
 cd VLABench
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 
 # Download the assets
 python scripts/download_assets.py
@@ -28,7 +27,7 @@ python scripts/download_assets.py
 Run the X-VLA model as an inference server (in a clean environment to avoid dependency conflicts):
 ```bash
 cd X-VLA
-conda activate X-VLA
+source .venv/bin/activate
 python -m deploy \
   --model_path 2toINF/X-VLA-VLABench \
   --port 8000
@@ -40,11 +39,10 @@ python -m deploy \
 Launch the VLABench evaluation client to connect to your X-VLA server:
 ```bash
 cd evaluation/vlabench
-conda activate vlabench
+source .venv-vlabench/bin/activate
 python vlabench_client.py \
     --eval-track track_1_in_distribution track_2_cross_category track_3_common_sense track_4_semantic_instruction \
     --metrics "success_rate" "intention_score" "progress_score" \
     --host 0.0.0.0 \
     --port 8000 
 ```
-

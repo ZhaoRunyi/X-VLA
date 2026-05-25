@@ -1,5 +1,6 @@
-# Activate your RoboTwin conda env here:
-conda activate RoboTwin
+# Activate your RoboTwin uv environment here:
+ROBOTWIN_ENV=${ROBOTWIN_ENV:-/path/to/RoboTwin/.venv}
+source "${ROBOTWIN_ENV}/bin/activate"
 
 # Define your log directory here:
 eval_log_dir=X-VLA/evaluation/robotwin-2.0/logs

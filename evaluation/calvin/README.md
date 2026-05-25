@@ -18,7 +18,7 @@ No additional modifications are required for X-VLA evaluation.
 Run the X-VLA model as an inference server (in a clean environment to avoid dependency conflicts):
 
 ```bash
-conda activate X-VLA
+source .venv/bin/activate
 python -m x_vla.deploy \
   --model_path  2toINF/X-VLA-Calvin-ABC_D\
   --host 0.0.0.0 \
@@ -47,4 +47,3 @@ The client will stream observations (images, proprioception, and language) to th
 | **Final CALVIN Score** |   —  |   —  |   —  |   —  | **4.43** |
 
 > The per-stage values represent **success rates**, and the final value is the **official CALVIN score**.
-

@@ -79,5 +79,6 @@ DATA_DOMAIN_ID = {
     "lift2": 0,
 
     # x2robot
-    "x2robot": 0
+    "x2robot": 0,
+    "slai_piper": 19,
 }

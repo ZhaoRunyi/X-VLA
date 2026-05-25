@@ -9,12 +9,12 @@
 #SBATCH --error=/dev/null
 
 
-source ~/miniconda3/etc/profile.d/conda.sh
-
 # ---------- config ----------
 NUM_WORKERS=10
 CHUNK=100
 BASE_PORT=8000
+X_VLA_ENV=${X_VLA_ENV:-/path/to/X-VLA/.venv}
+CALVIN_ENV=${CALVIN_ENV:-/path/to/calvin/.venv}
 
 MODEL_PATH=/mnt/petrelfs/zhengjinliang/HeteroDiffusionPolicy/X-VLA-ckpt/news/X-VLA-Calvin-ABC_D
 EXP_ROOT=exp/calvin/logs-0105-25-5
@@ -38,7 +38,7 @@ exec > "${OUT_DIR}/slurm.out" 2>&1
 echo "start server [worker ${i}] range=[${START},${END}) port=${PORT}"
 
 # ---------- server ----------
-conda activate UniAct
+source "${X_VLA_ENV}/bin/activate"
 python -m deploy \
     --model_path ${MODEL_PATH} \
     --output_dir ${OUT_DIR} \
@@ -54,7 +54,7 @@ echo "[worker ${i}] server ready"
 
 # ---------- client ----------
 unset http_proxy; unset https_proxy; unset HTTP_PROXY; unset HTTPS_PROXY
-conda activate calvin_venv
+source "${CALVIN_ENV}/bin/activate"
 cd ${EVAL_DIR}
 
 python -u calvin_client.py \

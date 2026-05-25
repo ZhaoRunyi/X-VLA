@@ -6,14 +6,14 @@ We evaluate **X-VLA** on the **Agilex Aloha platform** to perform long-horizon c
 ## 🚀 Quick Evaluation Steps
 
 ### 1️⃣ Environment Setup
-If you directly buy one Agilex Aloha plaform, Agilex has installed an `aloha` environment, which includes most of the requirements. You just need to install several packages for rotation transformation and server-client communication:
+If you directly buy one Agilex Aloha plaform, Agilex has installed an `aloha` environment, which includes most of the requirements. Activate the uv environment for the platform, then install several packages for rotation transformation and server-client communication:
 
 ``` bash
-conda activate aloha
-pip install json_numpy
-pip install requests
-pip install scipy
-pip install numpy==1.24.4
+source /path/to/aloha/.venv/bin/activate
+uv pip install json_numpy
+uv pip install requests
+uv pip install scipy
+uv pip install numpy==1.24.4
 ```
 
 

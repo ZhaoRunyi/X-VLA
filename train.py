@@ -73,6 +73,7 @@ def get_args_parser():
 
     # I/O
     parser.add_argument("--models", type=str, required=True, help="Path or HF repo for pretrained XVLA")
+    parser.add_argument("--action_mode", type=str, default=None, help="Override pretrained config action_mode")
     parser.add_argument("--output_dir", type=str, default="runnings", help="Directory to save checkpoints")
 
     # Data
@@ -190,7 +191,7 @@ def main(args):
     logger.info(f"Args: {args}")
 
     # Load model & processor
-    model = XVLA.from_pretrained(args.models)
+    model = XVLA.from_pretrained(args.models, **({"action_mode": args.action_mode, "ignore_mismatched_sizes": True} if args.action_mode else {}))
     processor = XVLAProcessor.from_pretrained(args.models)
 
     # Iterable dataloader (don't wrap with prepare)

@@ -18,7 +18,7 @@ No additional modifications are required for X-VLA evaluation.
 Run the X-VLA model as an inference server (in a clean environment to avoid dependency conflicts):
 
 ```bash
-conda activate X-VLA
+source .venv/bin/activate
 python -m deploy --model_path 2toINF/X-VLA-RoboTwin2
 ```
 ---

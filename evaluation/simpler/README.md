@@ -9,13 +9,13 @@ The evaluation follows [SimplerEnv](https://github.com/255isWhite/SimplerEnv), w
 ### 1️⃣ Environment Setup
 ```bash
 # Make sure X-VLA has been correctly installed before this
-conda activate XVLA
+source .venv/bin/activate
 git clone https://github.com/255isWhite/SimplerEnv.git --recurse-submodules
 realpath SimplerEnv # copy this path as simpler_env_path, it will be used for Google Robot evaluation
 cd SimplerEnv/ManiSkill2_real2sim
-pip install -e .
+uv pip install -e .
 cd ..
-pip install -e .
+uv pip install -e .
 ```
 
 *(Ensure MuJoCo and EGL rendering are correctly configured.)*
