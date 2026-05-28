@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from . import slai_piper_policy as policy
 
 PREFIX = "slai_piper_"
 DEFAULT_SPACE = "ee_gripper"
+GRIPPER_THRESHOLD_PATH = Path(__file__).with_name("slai_piper_gripper_thresholds.json")
 
 def split_space_name(name: str | None) -> str:
     if not name or name == "slai_piper":
@@ -27,3 +31,13 @@ def action_dim(name: str) -> int:
 def gripper_indices(name: str) -> tuple[int, ...]:
     names = policy.get_vector_names(policy.ActionSpaceConfig(ids=split_space_name(name)))
     return tuple(index for index, value in enumerate(names) if "gripper" in value)
+
+def gripper_threshold(root: str | Path) -> float:
+    root = Path(root)
+    thresholds = json.loads(GRIPPER_THRESHOLD_PATH.read_text()) if GRIPPER_THRESHOLD_PATH.exists() else {}
+    threshold = thresholds.get(root.name)
+    if threshold is None:
+        from scripts.estimate_piper_gripper_threshold import estimate_threshold, write_threshold
+        threshold = estimate_threshold(root)
+        write_threshold(root, threshold)
+    return float(threshold)

@@ -10,9 +10,8 @@ from scipy.interpolate import interp1d
 
 from .base import DomainHandler
 from . import slai_piper_policy
-from .slai_piper_space import extract_state_action
+from .slai_piper_space import extract_state_action, gripper_indices, gripper_threshold
 from ..utils import read_parquet, read_video_to_frames
-
 
 class SLAIPiperLeRobotV21Handler(DomainHandler):
     CAMERA_VIEW = tuple(slai_piper_policy.get_image_key_map(slai_piper_policy.ImageSpaceConfig()).values())
@@ -45,6 +44,11 @@ class SLAIPiperLeRobotV21Handler(DomainHandler):
         selected = extract_state_action(data["observation.state"], data["action"], action_mode, action_mode)
         states = np.asarray(selected["state"], dtype=np.float32)
         actions = np.asarray(selected["actions"], dtype=np.float32)
+        if "slai_piper" in action_mode:
+            indices = gripper_indices(action_mode)
+            if indices:
+                threshold = gripper_threshold(self.meta["root_path"])
+                states[..., indices], actions[..., indices] = states[..., indices] >= threshold, actions[..., indices] >= threshold
 
         freq = float(self.meta.get("fps", 10))
         duration = 1.0

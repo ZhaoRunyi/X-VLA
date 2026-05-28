@@ -20,6 +20,7 @@ import time
 import json
 import random
 import argparse
+import shutil
 from pathlib import Path
 from typing import Dict
 
@@ -75,20 +76,23 @@ def get_args_parser():
     parser.add_argument("--models", type=str, required=True, help="Path or HF repo for pretrained XVLA")
     parser.add_argument("--action_mode", type=str, default=None, help="Override pretrained config action_mode")
     parser.add_argument("--output_dir", type=str, default="runnings", help="Directory to save checkpoints")
+    parser.add_argument("--checkpoint_base_dir", type=str, default=None, help="Base directory for experiment outputs")
+    parser.add_argument("--exp_name", type=str, default=None, help="Experiment name appended to checkpoint_base_dir")
 
     # Data
     parser.add_argument("--train_metas_path", type=str, required=True, help="Path to training metadata")
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--batch_size", type=int, default=256, help="Global batch size across all processes")
+    parser.add_argument("--global_batch_size", type=int, default=None, help="Override --batch_size as global batch size")
 
     # Optimizer
     parser.add_argument("--learning_rate", type=float, default=1e-4)
-    parser.add_argument("--learning_coef", type=float, default=1.0, help="LR multiplier for soft prompts")
-    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--learning_coef", type=float, default=0.1, help="LR multiplier for soft prompts")
+    parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--betas", type=float, nargs=2, default=(0.9, 0.95))
     parser.add_argument("--max_grad_norm", type=float, default=1.0)
 
     # Schedule
-    parser.add_argument("--iters", type=int, default=1000000)
+    parser.add_argument("--iters", type=int, default=400000)
     parser.add_argument("--freeze_steps", type=int, default=1000)
     parser.add_argument("--warmup_steps", type=int, default=2000)
     parser.add_argument("--use_cosine_decay", action="store_true", default=False)
@@ -96,7 +100,9 @@ def get_args_parser():
 
     # Logging / saving
     parser.add_argument("--save_interval", type=int, default=50000)
+    parser.add_argument("--save_newest_interval", type=int, default=2000)
     parser.add_argument("--log_interval", type=int, default=20)
+    parser.add_argument("--resume", action="store_true", default=False)
 
     # System
     parser.add_argument("--seed", type=int, default=0)
@@ -177,18 +183,43 @@ def update_group_lrs(optim, step, args):
 # Main Training
 # ============================================================
 def main(args):
-    output_dir = Path(args.output_dir)
+    run_name = args.exp_name or Path(args.output_dir).name
+    output_template = args.checkpoint_base_dir or args.output_dir
+    output_dir = Path(output_template.replace("{RUN_NAME}", run_name))
+    if args.exp_name and "{RUN_NAME}" not in output_template:
+        output_dir = output_dir / run_name
+    args.output_dir = str(output_dir)
+    resume_dir = None
+    if args.resume:
+        checkpoints = [p for p in output_dir.glob("ckpt-*") if p.name.rsplit("-", 1)[-1].isdigit()]
+        if not checkpoints and not (output_dir / "newest").is_dir():
+            raise FileNotFoundError(f"No checkpoint found in {output_dir}")
+        resume_dir = output_dir / "newest" if (output_dir / "newest").is_dir() else max(checkpoints, key=lambda p: int(p.name.rsplit("-", 1)[-1]))
+        args.models = str(resume_dir)
     loggers = ["tensorboard"]
     try:
         import wandb
         loggers.append("wandb")
     except ImportError:
         pass
+    wandb_id_path = output_dir / "wandb_id.txt"
+    init_kwargs = {"wandb": {"name": output_dir.name}}
+    if args.resume and wandb_id_path.exists():
+        init_kwargs["wandb"].update({"id": wandb_id_path.read_text().strip(), "resume": "must"})
     accelerator = Accelerator(
         log_with=loggers,
         project_dir=output_dir
     )
-    accelerator.init_trackers("XVLA-Training", config=vars(args))
+    global_batch_size = args.global_batch_size or args.batch_size
+    if global_batch_size % accelerator.num_processes != 0:
+        raise ValueError(f"global batch size {global_batch_size} must be divisible by world_size={accelerator.num_processes}")
+    args.batch_size = global_batch_size // accelerator.num_processes
+    args.global_batch_size = global_batch_size
+    tracker_config = {k: v if isinstance(v, (int, float, str, bool, torch.Tensor)) else str(v) for k, v in vars(args).items()}
+    accelerator.init_trackers("XVLA-Training", config=tracker_config, init_kwargs=init_kwargs)
+    if accelerator.is_main_process and "wandb" in loggers:
+        import wandb
+        wandb_id_path.write_text(wandb.run.id)
     
     accelerator.wait_for_everyone()
     logger = get_logger(__name__, output_dir=output_dir, accelerator=accelerator)
@@ -217,12 +248,16 @@ def main(args):
         betas=tuple(args.betas),
         lr_coef_soft=args.learning_coef,
     )
+    if resume_dir and (resume_dir / "optimizer.pt").exists():
+        optim.load_state_dict(torch.load(resume_dir / "optimizer.pt", map_location="cpu"))
     model, optim = accelerator.prepare(model, optim)
 
     # Training loop
     model.train()
     global_step, t0 = 0, time.time()
-    logger.info(f"🚀 Start training for {args.iters} iterations | world_size={accelerator.num_processes}")
+    if resume_dir and (resume_dir / "state.json").exists():
+        global_step = json.loads((resume_dir / "state.json").read_text())["global_step"]
+    logger.info(f"🚀 Start training for {args.iters} iterations | world_size={accelerator.num_processes} | global_batch_size={args.global_batch_size} | per_process_batch_size={args.batch_size}")
     
     for batch in train_dataloader:
         # Encode language
@@ -266,11 +301,19 @@ def main(args):
         # Checkpointing
         global_step += 1
         if accelerator.is_main_process:
+            save_names = []
             if global_step == args.iters or global_step % args.save_interval == 0:
-                save_dir = os.path.join(output_dir, f"ckpt-{global_step}")
+                save_names.append(f"ckpt-{global_step}")
+            if args.save_newest_interval > 0 and global_step % args.save_newest_interval == 0:
+                save_names.append("newest")
+            for save_name in save_names:
+                save_dir = os.path.join(output_dir, save_name)
+                if os.path.exists(save_dir):
+                    shutil.rmtree(save_dir)
                 accelerator.print(f"💾 Saving model to {save_dir}")
                 accelerator.unwrap_model(model).save_pretrained(save_dir, safe_serialization=True)
                 processor.save_pretrained(save_dir)
+                accelerator.save(optim.state_dict(), os.path.join(save_dir, "optimizer.pt"))
                 with open(os.path.join(save_dir, "state.json"), "w") as f:
                     json.dump({"global_step": global_step}, f)
         if global_step >= args.iters: break
