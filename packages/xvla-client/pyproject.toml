@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xvla-client"
+version = "0.1.0"
+description = "Minimal websocket client for X-VLA policy serving."
+requires-python = ">=3.10"
+dependencies = ["msgpack", "numpy", "websockets"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

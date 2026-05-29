@@ -53,6 +53,9 @@ uv pip install "torch==2.1.*" "torchvision==0.16.*" "torchaudio==2.1.*" --index-
 
 # Install the remaining dependencies
 uv pip install -r requirements.txt
+
+# Install the lightweight websocket client package used by scripts/serve_policy.py
+uv pip install -e packages/xvla-client
 ```
 
 ---
@@ -124,6 +127,20 @@ Once launched, the API endpoint is available at:
 ```
 POST http://<server_ip>:8000/act
 ```
+
+For the deploy stack that uses the lightweight msgpack websocket policy protocol, use the X-VLA-native server and client package:
+
+```bash
+cd /workspace/X-VLA
+
+/workspace/X-VLA/.venv/bin/python -m scripts.serve_policy \
+  --model_path /path/to/your/model \
+  --processor_path /path/to/your/model \
+  --host 0.0.0.0 \
+  --port 8000
+```
+
+The websocket payload uses `xvla_client` msgpack transport with keys such as `observation.state`, `observation.images.cam_high`, `observation.images.cam_left_wrist`, `observation.images.cam_right_wrist`, `prompt`, `domain_id`, and `steps`.
 
 ---
 

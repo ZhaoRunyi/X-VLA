@@ -17,3 +17,5 @@ pyarrow==20.0.0
 h5py==3.12.1
 accelerate==1.2.1
 mediapy==1.2.4
+msgpack
+websockets
