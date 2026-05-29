@@ -135,7 +135,6 @@ cd /workspace/X-VLA
 
 /workspace/X-VLA/.venv/bin/python -m scripts.serve_policy \
   --model_path /path/to/your/model \
-  --processor_path /path/to/your/model \
   --host 0.0.0.0 \
   --port 8000
 ```

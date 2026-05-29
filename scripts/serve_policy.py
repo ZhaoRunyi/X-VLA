@@ -20,12 +20,12 @@ def to_image(value: Any) -> Image.Image:
 
 
 class XVLAWebsocketPolicy(BasePolicy):
-    def __init__(self, model_path: str, processor_path: str | None, device: str, default_prompt: str | None) -> None:
+    def __init__(self, model_path: str, device: str, default_prompt: str | None) -> None:
         from datasets.domain_handler import slai_piper_space
         from models.modeling_xvla import XVLA
         from models.processing_xvla import XVLAProcessor
 
-        self.processor = XVLAProcessor.from_pretrained(processor_path or model_path)
+        self.processor = XVLAProcessor.from_pretrained(model_path)
         self.model = XVLA.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
         self.device = torch.device("cuda" if device == "auto" and torch.cuda.is_available() else "cpu" if device == "auto" else device)
         self.model = self.model.to(self.device).to(torch.float32).eval()
@@ -65,7 +65,6 @@ class XVLAWebsocketPolicy(BasePolicy):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Serve an X-VLA policy over the xvla-client websocket protocol.")
     parser.add_argument("--model_path", required=True)
-    parser.add_argument("--processor_path", default=None)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
@@ -76,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, force=True)
-    policy = XVLAWebsocketPolicy(args.model_path, args.processor_path, args.device, args.default_prompt)
+    policy = XVLAWebsocketPolicy(args.model_path, args.device, args.default_prompt)
     server = WebsocketPolicyServer(policy, host=args.host, port=args.port, metadata=policy.metadata)
     server.serve_forever()
 
