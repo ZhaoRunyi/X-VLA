@@ -7,7 +7,19 @@ name = "xvla-client"
 version = "0.1.0"
 description = "Minimal websocket client for X-VLA policy serving."
 requires-python = ">=3.10"
-dependencies = ["msgpack", "numpy<2", "typing_extensions", "websockets"]
+dependencies = [
+    "imageio",
+    "imageio-ffmpeg",
+    "msgpack",
+    "numpy<2",
+    "opencv-python-headless",
+    "piper_sdk",
+    "pyrealsense2; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "PyYAML",
+    "scipy",
+    "typing_extensions",
+    "websockets",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
