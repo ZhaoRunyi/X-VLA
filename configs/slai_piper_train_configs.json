@@ -1,0 +1,112 @@
+{
+  "defaults": {
+    "action_mode": "slai_piper",
+    "global_batch_size": 256,
+    "learning_rate": 0.0001,
+    "learning_coef": 0.1,
+    "weight_decay": 0.01,
+    "iters": 400000,
+    "freeze_steps": 1000,
+    "warmup_steps": 20000,
+    "save_newest_interval": 2000,
+    "save_interval": 50000
+  },
+  "configs": {
+    "slai_piper_beaker_mixer_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_beaker_mixer_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_beaker_mixer_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_beaker_mixer_0421/meta/info.json",
+      "prompt": "Pick the beaker, place it on the mixer, then flip the toggle switch with the other arm."
+    },
+    "slai_piper_carry_basket_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_carry_basket_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_carry_basket_0426",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_carry_basket_0426/meta/info.json",
+      "prompt": "Pick the bottle then place it to the basket, carry the basket with the other arm."
+    },
+    "slai_piper_click_bell_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_click_bell_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_click_bell_0403",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_click_bell_0403/meta/info.json",
+      "prompt": "Click the bell"
+    },
+    "slai_piper_depress_pipette_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_depress_pipette_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_depress_pipette_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_depress_pipette_0421/meta/info.json",
+      "prompt": "Pick the pipette and move it to the center-top of the beaker, use the other arm to depress the plunger."
+    },
+    "slai_piper_dock_tubes_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_dock_tubes_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_dock_tubes_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_dock_tubes_0421/meta/info.json",
+      "prompt": "Pick up two centrifuge tubes from the table and dock them horizontally."
+    },
+    "slai_piper_insert_test_tube_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_insert_test_tube_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_insert_test_tube_0430",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_insert_test_tube_0430/meta/info.json",
+      "prompt": "Pick up the test tube, and it to the other arm, and insert it to the rack."
+    },
+    "slai_piper_items_hand_over_place_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_items_hand_over_place_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_items_hand_over_place_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_items_hand_over_place_0421/meta/info.json",
+      "prompt": "Pick up the pen, hand it over to the other arm and then place it in to the pen holder"
+    },
+    "slai_piper_open_drawer_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_open_drawer_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_open_drawer_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_open_drawer_0421/meta/info.json",
+      "prompt": "Open the drawer, pick the tomato with the other arm then place it in the drawer."
+    },
+    "slai_piper_open_pan_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_open_pan_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_open_pan_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_open_pan_0421/meta/info.json",
+      "prompt": "Grab the knod on the pan lid, lift it to open the pan, then pick the carrot with the other arm, place it in the pan, then move the lid back to the pan to close it."
+    },
+    "slai_piper_pour_dual_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_pour_dual_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_pour_dual_0427",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_pour_dual_0427/meta/info.json",
+      "prompt": "Pick the cup and the bottle with the other arm, pour the water from bottle to cup"
+    },
+    "slai_piper_rearr_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_rearr_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_rearr_0421",
+      "train_metas_path": "/workspace/data/ZhaoRunyi/Piper_rearr_0421/meta/info.json",
+      "prompt": "Pick the fork and the spoon, place them next to the plate."
+    },
+    "slai_piper_all_tasks_ee20_xvla_pt_bs256_400000": {
+      "exp_name": "slai_piper_all_tasks_ee20_xvla_pt_bs256_400000",
+      "dataset_name": "Piper_all_tasks",
+      "train_metas_path": [
+        "/workspace/data/ZhaoRunyi/Piper_beaker_mixer_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_carry_basket_0426/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_click_bell_0403/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_depress_pipette_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_dock_tubes_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_insert_test_tube_0430/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_items_hand_over_place_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_open_drawer_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_open_pan_0421/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_pour_dual_0427/meta/info.json",
+        "/workspace/data/ZhaoRunyi/Piper_rearr_0421/meta/info.json"
+      ],
+      "prompts": [
+        "Pick the beaker, place it on the mixer, then flip the toggle switch with the other arm.",
+        "Pick the bottle then place it to the basket, carry the basket with the other arm.",
+        "Click the bell",
+        "Pick the pipette and move it to the center-top of the beaker, use the other arm to depress the plunger.",
+        "Pick up two centrifuge tubes from the table and dock them horizontally.",
+        "Pick up the test tube, and it to the other arm, and insert it to the rack.",
+        "Pick up the pen, hand it over to the other arm and then place it in to the pen holder",
+        "Open the drawer, pick the tomato with the other arm then place it in the drawer.",
+        "Grab the knod on the pan lid, lift it to open the pan, then pick the carrot with the other arm, place it in the pan, then move the lid back to the pan to close it.",
+        "Pick the cup and the bottle with the other arm, pour the water from bottle to cup",
+        "Pick the fork and the spoon, place them next to the plate."
+      ]
+    }
+  }
+}

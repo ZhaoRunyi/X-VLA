@@ -74,13 +74,14 @@ def get_args_parser():
 
     # I/O
     parser.add_argument("--models", type=str, required=True, help="Path or HF repo for pretrained XVLA")
+    parser.add_argument("--train_config", "--train-config", type=str, default=None, help="Named training preset")
     parser.add_argument("--action_mode", type=str, default=None, help="Override pretrained config action_mode")
     parser.add_argument("--output_dir", type=str, default="runnings", help="Directory to save checkpoints")
     parser.add_argument("--checkpoint_base_dir", type=str, default=None, help="Base directory for experiment outputs")
     parser.add_argument("--exp_name", type=str, default=None, help="Experiment name appended to checkpoint_base_dir")
 
     # Data
-    parser.add_argument("--train_metas_path", type=str, required=True, help="Path to training metadata")
+    parser.add_argument("--train_metas_path", type=str, default=None, help="Path to training metadata")
     parser.add_argument("--batch_size", type=int, default=256, help="Global batch size across all processes")
     parser.add_argument("--global_batch_size", type=int, default=None, help="Override --batch_size as global batch size")
 
@@ -108,6 +109,24 @@ def get_args_parser():
     parser.add_argument("--seed", type=int, default=0)
 
     return parser
+
+
+def apply_train_config(args, parser):
+    if not args.train_config:
+        if args.train_metas_path is None:
+            raise ValueError("--train_metas_path is required unless --train-config provides it")
+        return
+    config_path = Path(__file__).resolve().parent / "configs" / "slai_piper_train_configs.json"
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    configs = payload.get("configs", {})
+    if args.train_config not in configs:
+        raise ValueError(f"Unknown train config {args.train_config!r}. Available: {sorted(configs)}")
+    preset = {**payload.get("defaults", {}), **configs[args.train_config]}
+    for key, value in preset.items():
+        if hasattr(args, key) and getattr(args, key) in (None, parser.get_default(key)):
+            setattr(args, key, value)
+    if args.train_metas_path is None:
+        raise ValueError(f"train config {args.train_config!r} does not define train_metas_path")
 
 
 # ============================================================
@@ -326,6 +345,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("XVLA training script", parents=[get_args_parser()])
     args = parser.parse_args()
+    apply_train_config(args, parser)
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)

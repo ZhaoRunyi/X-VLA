@@ -51,32 +51,41 @@ class InfiniteDataReader(IterableDataset):
         self.action_mode = action_mode
         self.metas: Dict[str, dict] = {}
         print("use action mode:", action_mode)
-        if fileio.isdir(metas_path):
-            meta_files = fileio.list_dir_or_file(metas_path, suffix=".json", recursive=True, list_dir=False)
-            root = metas_path
-        else: meta_files, root = [metas_path], ""
-        
-        for file in meta_files:
-            file_path = fileio.join_path(root, file)
-            with io.BytesIO(fileio.get(file_path)) as f: meta = json.load(f)
-            ### General Style
-            if 'dataset_name' in meta.keys() and 'datalist' in meta.keys():
-                print(f"== dataset {meta['dataset_name']} with {len(meta['datalist'])} trajs")
-                self.metas[meta["dataset_name"]] = meta
-            ### Lerobot v2.1 style
-            elif "codebase_version" in meta.keys() and meta["codebase_version"] == 'v2.1':
-                try:
-                    get_handler_cls(meta["robot_type"])
-                except KeyError:
-                    print(f"== skip unsupported lerobot dataset {meta['robot_type']} at {file_path}====")
-                    continue
-                meta['datalist'] = []
-                if "root_path" not in meta.keys(): meta['root_path'] = "/".join(file_path.split("/")[:-2])
-                with io.BytesIO(fileio.get(fileio.join_path("/".join(file_path.split("/")[:-1]), "episodes.jsonl"))) as f:
-                    for line in f: meta['datalist'].append(json.loads(line.decode("utf-8")))
-                self.metas[meta['root_path']] = meta
-                print(f"== lerobot dataset {meta['robot_type']} with {meta['total_episodes']} trajs at {meta['root_path']}====")
-            else: raise NotImplementedError(f"unrecognized meta file format: {file}")
+        if isinstance(metas_path, (list, tuple)):
+            meta_sources = [str(path) for path in metas_path]
+        else:
+            meta_sources = [path.strip() for path in str(metas_path).split(",") if path.strip()]
+
+        for source in meta_sources:
+            if fileio.isdir(source):
+                meta_files = fileio.list_dir_or_file(source, suffix=".json", recursive=True, list_dir=False)
+                root = source
+            else:
+                meta_files, root = [source], ""
+
+            for file in meta_files:
+                file_path = fileio.join_path(root, file)
+                with io.BytesIO(fileio.get(file_path)) as f:
+                    meta = json.load(f)
+
+                ### General Style
+                if 'dataset_name' in meta.keys() and 'datalist' in meta.keys():
+                    print(f"== dataset {meta['dataset_name']} with {len(meta['datalist'])} trajs")
+                    self.metas[meta["dataset_name"]] = meta
+                ### Lerobot v2.1 style
+                elif "codebase_version" in meta.keys() and meta["codebase_version"] == 'v2.1':
+                    try:
+                        get_handler_cls(meta["robot_type"])
+                    except KeyError:
+                        print(f"== skip unsupported lerobot dataset {meta['robot_type']} at {file_path}====")
+                        continue
+                    meta['datalist'] = []
+                    if "root_path" not in meta.keys(): meta['root_path'] = "/".join(file_path.split("/")[:-2])
+                    with io.BytesIO(fileio.get(fileio.join_path("/".join(file_path.split("/")[:-1]), "episodes.jsonl"))) as f:
+                        for line in f: meta['datalist'].append(json.loads(line.decode("utf-8")))
+                    self.metas[meta['root_path']] = meta
+                    print(f"== lerobot dataset {meta['robot_type']} with {meta['total_episodes']} trajs at {meta['root_path']}====")
+                else: raise NotImplementedError(f"unrecognized meta file format: {file}")
         if not self.metas:
             raise NotImplementedError(f"no supported meta files found in: {metas_path}")
 
