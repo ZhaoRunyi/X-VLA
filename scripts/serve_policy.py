@@ -25,6 +25,7 @@ class XVLAWebsocketPolicy(BasePolicy):
         from models.modeling_xvla import XVLA
         from models.processing_xvla import XVLAProcessor
 
+        self.model_path = model_path
         self.processor = XVLAProcessor.from_pretrained(model_path)
         self.model = XVLA.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
         self.device = torch.device("cuda" if device == "auto" and torch.cuda.is_available() else "cpu" if device == "auto" else device)
@@ -35,7 +36,15 @@ class XVLAWebsocketPolicy(BasePolicy):
 
     @property
     def metadata(self) -> dict[str, Any]:
-        return {"backend": "xvla", "action_mode": self.action_mode, "action_dim": self.model.action_space.dim_action, "action_horizon": self.model.num_actions}
+        return {
+            "backend": "xvla",
+            "model_path": self.model_path,
+            "ckpt_dir": self.model_path,
+            "checkpoint_dir": self.model_path,
+            "action_mode": self.action_mode,
+            "action_dim": self.model.action_space.dim_action,
+            "action_horizon": self.model.num_actions,
+        }
 
     def proprio(self, obs: dict[str, Any]) -> np.ndarray:
         state = np.asarray(obs.get("observation.state", obs.get("proprio")), dtype=np.float32)
