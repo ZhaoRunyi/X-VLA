@@ -1,5 +1,4 @@
 av==15.0.0
-opencv-python==4.11.0.86
 transformers<=4.51.3
 packaging>=24.0
 setuptools>=68.0.0
